@@ -5,7 +5,9 @@
 1. README.Md  (Details the purpose of this repo)
 2. CodeBook.Md (Describes the variables)
 3. run_analysis.R (Script file that performs the analysis)
-4. Processed_Data.txt (The resulting cleaned up data)
+4. run_analysis.Rmd (R Markdown document with complete instructions)
+5. Processed_Data.txt (The resulting cleaned up data)
+
 
 ##Data acquisition 
 
