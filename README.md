@@ -9,17 +9,17 @@
 
 ##Data acquisition 
 
-Raw data used for this project is obtained from Machine Learning Repository of University of California, Irvine. Raw data was collected from the accelerometers of the Samsung Galaxy S smartphone by various participants while performing 6 different activities over a period of time. This data is divided into training (70%) and test (30%) data sets. 
+Raw data used for this project was obtained from Machine Learning Repository of University of California, Irvine. Raw data was collected from the accelerometers of the Samsung Galaxy S smartphone by various participants while performing 6 different activities over a period of time. This data was than divided into training (70%) and test (30%) data sets. 
 
 A detailed description of data collection is available at
 https://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones
 
-Compressed raw data is downloaded from this link
+Compressed raw data was downloaded from this link
 https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip 
 
 ##Purpose of this Project
 
-The purpose of this project is to demonstrate my ability to collect, work with, and clean a data set. The goal is to prepare tidy data that can be used for later analysis. The raw data is processed by run_analysis.R script through following steps. 
+The purpose of this project is to demonstrate my ability to collect, work with, and clean a data set. The goal is to prepare tidy data that can be used for later analysis. The raw data was processed by run_analysis.R script through following steps to produce tidy data set. 
 
 1. Download the compressed data file from the url and read the appropriate files. 
 2. Merge the training and the test data sets to create one data set.
