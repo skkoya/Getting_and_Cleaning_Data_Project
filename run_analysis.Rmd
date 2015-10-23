@@ -1,0 +1,124 @@
+---
+title: "run_analysis"
+author: "S. Kiran Koya"
+date: "October 22, 2015"
+output: 
+  html_document: 
+    highlight: pygments
+    theme: readable
+---
+
+run_analysis.R function will perform the following tasks. 
+
+1. Download data from the url
+2. Merges the training and the test sets to create one data set.
+3. Extracts only the measurements on the mean and standard deviation for each measurement. 
+4. Uses descriptive activity names to name the activities in the data set
+5. Appropriately labels the data set with descriptive variable names. 
+6. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+
+#Clean up environment and load libraries
+
+```{r}
+rm(list = ls(all = TRUE))
+library(plyr) 
+library(data.table) 
+library(dplyr)
+```
+
+#1. Download data from the url
+
+```{r}
+#Check to see if file is downloaded. If not download the data from the url  
+filename <- "UCI HAR Dataset"
+zfilename <- "getdata-projectfiles-UCI HAR Dataset.zip"
+if(! file.exists(zfilename)){
+        message("File doesn't exist. Downloading compressed file from the archive")
+        fileURL = "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
+        download.file(url = fileURL, destfile = zfilename)
+}
+
+#Check to see if file is uncompressed. If not extract data. 
+if(! file.exists(filename)){
+        message("Extracting the data")
+        unzip(zipfile = zfilename)
+}
+rm(filename, zfilename)
+
+#read feature and activity file
+features <- read.table("UCI HAR Dataset/features.txt")
+activity <- read.table("UCI HAR Dataset/activity_labels.txt")
+
+#read test files
+X_test <- read.table("UCI HAR Dataset/test/X_test.txt")
+Y_test <- read.table("UCI HAR Dataset/test/Y_test.txt")
+subject_test <- read.table("UCI HAR Dataset/test/subject_test.txt")
+
+#read train files
+X_train <- read.table("UCI HAR Dataset/train/X_train.txt")
+Y_train <- read.table("UCI HAR Dataset/train/Y_train.txt")
+subject_train <- read.table("UCI HAR Dataset/train/subject_train.txt")
+```
+
+#2. Merge the training and the test sets to create one data set.
+```{r}
+X_all <- rbind(X_train, X_test) #merge both X files
+Y_all <- rbind(Y_train, Y_test) #merge both Y files
+subjects_all <- rbind(subject_test, subject_train) #merge both Subject files
+rm(X_test,Y_test,X_train,Y_train,subject_train,subject_test) #remove unnecessary files
+```
+
+#3. Appropriately label the data set with descriptive variable names.
+```{r}
+names(X_all) = features[,2] #replace variable names with corresponding feature names
+names(Y_all) = c("activityID") #name variable as activityID
+names(subjects_all) = c("subjects") #name variable as subjects
+names(activity) = c("activityID", "activityName") #name variables as "activityID" and "activityName"
+```
+
+#4. Extract only the mean and standard deviation for each measurement. 
+```{r}
+mindex <- grep("mean",features[, 2]) #get any feature that has mean in it 
+mindex <- append(mindex, 555:561) #555:561 are also means but were not identified by above command. Add them to the index. 
+sindex <- grep("std",features[, 2]) #get any feature that has std in it. 
+mergedindex<- unique(c(mindex,sindex)) # Remove duplicates and merge indeces.
+#using the mergedindex extract column data for means and stds. 
+X_all_diced <- X_all[mergedindex]
+rm(mindex, sindex, mergedindex) #remove unnecessary files
+```
+
+#5. Use descriptive activity names to name the activities in the data set
+```{r}
+#From Y_all_labeled table, take the activity and merge it with X_all_diced table to the corresponding activity. 
+Y_all_labeled <- merge(Y_all, activity, "activityID") #Join Y_all table with activity table by "activityID"
+X_all_diced$Activity <- Y_all_labeled[,2] #Create a new column Activity and assign corresponding activity
+
+#From Subjects_all table, take subjects and appropritate them to X_all_diced table subjects. 
+X_all_diced$Subjects <- subjects_all[, 1] #create a new variable Subjects and add corresponding description
+X_all_diced$Subjects <- sub("^", "Participant ", X_all_diced$Subjects) #change subject names to descriptive "Participant 1 etc."
+rm(X_all, Y_all, Y_all_labeled, subjects_all, activity, features) #remove unnecessary files.
+```
+###clean up names and descriptive terms. 
+```{r}
+#clean up variable names to make them more descriptive using gsub function
+names(X_all_diced) <- gsub("Acc", "_Accelerator", names(X_all_diced)) 
+names(X_all_diced) <- gsub("Mag", "_Magnitude", names(X_all_diced))
+names(X_all_diced) <- gsub("Gyro", "_Gyroscope", names(X_all_diced))
+names(X_all_diced) <- gsub("^t", "Time_", names(X_all_diced))
+names(X_all_diced) <- gsub("^f", "Frequency_", names(X_all_diced))
+names(X_all_diced) <- gsub("std", "StDev", names(X_all_diced))
+names(X_all_diced) <- gsub("mean", "Mean", names(X_all_diced))
+```
+
+#6. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+```{r}
+X_all_diced.dt <- data.table(X_all_diced)
+TidyData <- X_all_diced.dt[, lapply(.SD, mean), by = 'Subjects,Activity']
+write.table(TidyData, file = "Processed_Data.txt", row.names = FALSE)
+rm(X_all_diced, X_all_diced.dt) #remove unnecessary files. 
+names(TidyData)
+```
+
+
+
+
